@@ -4,9 +4,10 @@ use serde::Deserialize;
 use tao::{
     event::{Event, StartCause, WindowEvent},
     event_loop::{ControlFlow, EventLoopBuilder},
+    platform::unix::WindowExtUnix,
     window::WindowBuilder,
 };
-use wry::WebViewBuilder;
+use wry::{WebViewBuilder, WebViewBuilderExtUnix};
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "kind")]
@@ -22,7 +23,9 @@ pub fn spawn_browser(url: String, command_receiver: Option<Receiver<Command>>) -
         .with_title("Fossbeamer")
         .build(&event_loop)
         .unwrap();
-    let webview = WebViewBuilder::new(&window).with_url(url).build()?;
+    let vbox = window.default_vbox().unwrap();
+    let builder = WebViewBuilder::new_gtk(vbox);
+    let webview = builder.with_url(url).build()?;
 
     if let Some(command_receiver) = command_receiver {
         let proxy = event_loop.create_proxy();
